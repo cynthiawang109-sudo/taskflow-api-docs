@@ -13,3 +13,14 @@
   a data-loss finding in review.
 - Any new table holding user-generated content must state its PII story in
   this file before the migration is approved.
+
+## Demo implementation note
+
+The demo implementation (demo-app) stores a reduced `tasks` shape (`id`,
+`title`, `status`) in a local SQLite file that stands in for this table;
+the production store described above remains PostgreSQL. PII story for
+the demo table: `title` is user-generated free text and is the only user
+content stored — the demo is fictional-data-only, keeps the file on the
+developer's machine, and has no email or other PII columns. The production
+invariants above (project ownership, soft deletes, `completed_at`) are
+not implemented by the demo store.
