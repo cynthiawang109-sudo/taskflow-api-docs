@@ -13,3 +13,7 @@ System-level docs live in the sibling repo `taskflow-docs`.
 |---|---|
 | `api-conventions.md` | Versioning, errors, pagination, health-check contract |
 | `data-model.md` | Core tables and their invariants |
+| `endpoints.md` | The production endpoint reference, with demo coverage marked |
+| `errors.md` | The error code catalog and how to choose a code |
+| `webhooks.md` | Events, payloads, signing, delivery semantics |
+| `rate-limiting.md` | Limits per credential class, 429 behavior, exemptions |

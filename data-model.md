@@ -7,6 +7,40 @@
 | `tasks` | `id`, `project_id → projects`, `title`, `status`, `assignee_id → users` (nullable) | `status` ∈ `todo / doing / done`; transitions to `done` set `completed_at` in the same transaction |
 | `comments` | `id`, `task_id → tasks`, `author_id → users`, `body` | Comments are append-only; edits create a new revision row, never an UPDATE of `body` |
 
+## Table detail
+
+### `users`
+
+- Index: unique on `lower(email)` — uniqueness is case-insensitive
+  because the column is stored lower-cased.
+- `display_name` is a user-chosen public label shown on boards; the
+  email remains the only PII column.
+
+### `projects`
+
+- Index: `(owner_id, id)` backs the project list.
+- Soft delete sets `deleted_at`; deleted projects disappear from list
+  endpoints, and their tasks go with them. Soft-deleted rows are
+  retained — the application never hard-deletes them.
+
+### `tasks`
+
+- Indexes: `(project_id, status, id)` backs board paging (the cursor
+  is the last seen `id`; see ADR-0002 in `taskflow-docs`), and
+  `(assignee_id, status)` backs the "my tasks" view.
+- Reopening a task (`done` → `doing`) clears `completed_at` in the
+  same transaction that changes the status.
+- List queries exclude rows with `deleted_at` set, by default and in
+  every client we ship.
+
+### `comments`
+
+- Index: `(task_id, id)` — comments render oldest first.
+- A revision row carries `supersedes_id` pointing at the row it
+  replaces; readers render the head of each chain. The original text
+  is never updated in place, which is what makes the append-only
+  invariant auditable.
+
 ## Notes for reviewers
 
 - Deletes are soft (`deleted_at`) on `projects` and `tasks`; hard deletes are
