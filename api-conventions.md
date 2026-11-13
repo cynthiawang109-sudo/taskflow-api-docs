@@ -22,6 +22,12 @@ clients, reviewers, and tooling can rely on one predictable shape.
   (default 50, max 200). Responses include `next_cursor` (null at the end).
 - Offset pagination is not used: it skips or repeats rows under concurrent
   writes.
+- `GET /v1/tasks` additionally accepts an optional `status` filter
+  (`todo`, `doing`, or `done`) so board clients can page one column at a
+  time instead of downloading every task (TF-102). An unknown value is a
+  validation error: 422 with code `invalid_status`. Out-of-range
+  `cursor`/`limit` values are clamped, never an error, so a paging
+  client cannot wedge itself on a bad bound.
 
 ## Health checks
 
