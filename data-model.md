@@ -53,9 +53,13 @@
 The demo implementation (demo-app) stores a reduced `tasks` shape (`id`,
 `title`, `status`) in a local SQLite file that stands in for this table;
 the production store described above remains PostgreSQL. PII story for
-the demo table: `title` is user-generated free text and is the only user
-content stored — the demo is fictional-data-only, keeps the file on the
-developer's machine, and has no email or other PII columns. The production
+the demo tables: `tasks.title` and `comments.body` are user-generated
+free text, and they are the only user content stored — the demo is
+fictional-data-only, keeps the file on the
+developer's machine, and has no email or other PII columns. Comment
+bodies are never echoed in error messages and never written to logs;
+because comments are append-only, a comment's full revision history
+is retained in the store, and the demo has no deletion path. The production
 invariants above (project ownership, soft deletes, `completed_at`) are
 not implemented by the demo store.
 
