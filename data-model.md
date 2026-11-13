@@ -24,3 +24,9 @@ content stored — the demo is fictional-data-only, keeps the file on the
 developer's machine, and has no email or other PII columns. The production
 invariants above (project ownership, soft deletes, `completed_at`) are
 not implemented by the demo store.
+
+The demo also carries the worker's `digest_sends` ledger (`user_id`,
+`week`, `status`, `attempts`, `last_error`, `sent_at`). PII story:
+recipients are identified by user ID only — there is deliberately no
+email column — and `last_error` holds a truncated sender error string,
+never message content or an address.
