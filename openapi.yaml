@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: TaskFlow Demo API
-  version: 1.1.0
-  description: The demo implementation of the TaskFlow api-service (demo-app, v1.1.0). It implements a
+  version: 1.2.0
+  description: The demo implementation of the TaskFlow api-service (demo-app, v1.2.0). It implements a
     subset of the production API described in endpoints.md — health, tasks, and comments — over reduced shapes
     in a local SQLite store. Conventions (error envelope, cursor pagination, health contract) follow api-conventions.md
     exactly; errors use the catalog in errors.md.
