@@ -17,3 +17,4 @@ System-level docs live in the sibling repo `taskflow-docs`.
 | `errors.md` | The error code catalog and how to choose a code |
 | `webhooks.md` | Events, payloads, signing, delivery semantics |
 | `rate-limiting.md` | Limits per credential class, 429 behavior, exemptions |
+| `openapi.yaml` | The demo implementation's OpenAPI spec (generated from demo-app, then curated); published to GitBook as the interactive API reference |

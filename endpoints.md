@@ -4,8 +4,9 @@ All paths are under `/v1` (see `api-conventions.md` for versioning,
 the error envelope, and pagination). Authentication is bearer-token
 based (see `taskflow-docs`, `authentication.md`). The **Demo** column
 marks the endpoints the workspace's demo implementation (`demo-app`)
-implements — a subset, on unversioned paths, over the reduced task
-shape described in `data-model.md`.
+implements — a subset, over the reduced task shape described in
+`data-model.md`. The demo's OpenAPI spec is `openapi.yaml` in this
+repo.
 
 | Method | Path | Purpose | Demo |
 |---|---|---|---|
@@ -20,8 +21,8 @@ shape described in `data-model.md`.
 | GET | `/v1/tasks` | List tasks; filters: `project_id`, `status`; cursor-paginated | ✓ |
 | POST | `/v1/tasks` | Create a task | ✓ |
 | GET | `/v1/tasks/{id}` | Fetch one task | ✓ |
-| PATCH | `/v1/tasks/{id}` | Update title, status, or assignee; `status` → `done` sets `completed_at` | ✓ |
-| DELETE | `/v1/tasks/{id}` | Soft-delete a task | ✓ |
+| PATCH | `/v1/tasks/{id}` | Update title, status, or assignee; `status` → `done` sets `completed_at` | |
+| DELETE | `/v1/tasks/{id}` | Soft-delete a task | |
 | GET | `/v1/tasks/{id}/comments` | List comments (cursor-paginated, oldest first) | |
 | POST | `/v1/tasks/{id}/comments` | Add a comment | |
 

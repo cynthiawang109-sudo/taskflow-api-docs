@@ -1,0 +1,239 @@
+openapi: 3.1.0
+info:
+  title: TaskFlow Demo API
+  version: 1.1.0
+  description: The demo implementation of the TaskFlow api-service (demo-app, v1.1.0). It implements a
+    subset of the production API described in endpoints.md — health and tasks — over a reduced task shape
+    in a local SQLite store. Conventions (error envelope, cursor pagination, health contract) follow api-conventions.md
+    exactly; errors use the catalog in errors.md.
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: get_health
+      responses:
+        '200':
+          description: Service can serve traffic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthOk'
+        '503':
+          description: A hard dependency is unreachable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthDegraded'
+      tags:
+      - health
+      description: 'Unauthenticated. 200 {"status": "ok"} when the service can serve traffic; 503 with
+        per-dependency checks when a hard dependency is down.'
+  /v1/tasks:
+    get:
+      summary: List tasks
+      operationId: list_tasks
+      parameters:
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 0
+          title: Cursor
+        description: The last task id from a previous page's `next_cursor`; 0 starts from the beginning.
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 50
+          title: Limit
+        description: Page size (default 50). Out-of-range values are clamped, never an error.
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+        description: 'Filter by status: `todo`, `doing`, or `done`. Any other value is a 422 `invalid_status`.'
+      responses:
+        '200':
+          description: A page of tasks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskList'
+        '422':
+          description: Validation error — `invalid_status` for a bad status filter, `validation_error`
+            otherwise
+          content:
+            application/json:
+              schema: &id001
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Task store unavailable (`store_unavailable`)
+          content:
+            application/json:
+              schema: *id001
+      tags:
+      - tasks
+      description: Cursor-paginated, optionally filtered to one board column via `status`.
+    post:
+      summary: Create a task
+      operationId: create_task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskIn'
+      responses:
+        '201':
+          description: The created task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '422':
+          description: Validation error (`validation_error`); messages never echo submitted values
+          content:
+            application/json:
+              schema: *id001
+        '503':
+          description: Task store unavailable (`store_unavailable`)
+          content:
+            application/json:
+              schema: *id001
+      tags:
+      - tasks
+      description: '`status` defaults to `todo`.'
+  /v1/tasks/{task_id}:
+    get:
+      summary: Get a task
+      operationId: get_task
+      parameters:
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Task Id
+      responses:
+        '200':
+          description: The task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          description: No task with that id (`task_not_found`)
+          content:
+            application/json:
+              schema: *id001
+        '422':
+          description: Validation error (`validation_error`)
+          content:
+            application/json:
+              schema: *id001
+        '503':
+          description: Task store unavailable (`store_unavailable`)
+          content:
+            application/json:
+              schema: *id001
+      tags:
+      - tasks
+components:
+  schemas:
+    TaskIn:
+      properties:
+        title:
+          type: string
+          title: Title
+        status:
+          type: string
+          title: Status
+          default: todo
+      type: object
+      required:
+      - title
+      title: TaskIn
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        status:
+          type: string
+          enum:
+          - todo
+          - doing
+          - done
+      required:
+      - id
+      - title
+      - status
+    TaskList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Task'
+        next_cursor:
+          type: integer
+          nullable: true
+      required:
+      - items
+      - next_cursor
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: task_not_found
+            message:
+              type: string
+              example: task 999 not found
+          required:
+          - code
+          - message
+      required:
+      - error
+    HealthOk:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+      required:
+      - status
+    HealthDegraded:
+      type: object
+      properties:
+        status:
+          type: string
+          example: degraded
+        checks:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            task_store: down
+      required:
+      - status
+      - checks
+servers:
+- url: http://localhost:8000
+  description: Local demo instance (uvicorn main:app)
+tags:
+- name: health
+  description: The health contract every TaskFlow service exposes.
+- name: tasks
+  description: Task list, creation, and retrieval.

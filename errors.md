@@ -21,6 +21,7 @@ contract in `api-conventions.md`, not this envelope.
 | `email_already_registered` | 409 | Sign-up attempted with an email that already has an account |
 | `conflict` | 409 | The resource's current state forbids the operation (for example, transferring a deleted project) |
 | `rate_limited` | 429 | Too many requests; honor `Retry-After` (see `rate-limiting.md`) |
+| `store_unavailable` | 503 | A hard dependency is unreachable mid-request (the demo's task store, in production the database); the same condition appears on `/health` as `degraded` |
 | `internal_error` | 500 | Unexpected failure; the message stays generic and the detail lives in logs under the `request_id` |
 
 Two habits keep this catalog trustworthy:
