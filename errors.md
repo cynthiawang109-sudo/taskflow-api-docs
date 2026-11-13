@@ -1,9 +1,12 @@
 # TaskFlow — error code catalog
 
-Every error response uses the envelope from `api-conventions.md`:
+Every error response from the API uses the envelope from
+`api-conventions.md`:
 `{ "error": { "code": "...", "message": "..." } }`. Clients branch on
 `code`; `message` is human-facing and may change. Codes are never
-renamed or reused once shipped — new failures get new codes.
+renamed or reused once shipped — new failures get new codes. The one
+exception is `GET /health`: its `503` body follows the health
+contract in `api-conventions.md`, not this envelope.
 
 | Code | HTTP | Meaning |
 |---|---|---|
