@@ -1,5 +1,7 @@
 # TaskFlow — error code catalog
 
+For migration steps, see the [migration guide](migration-guide.md).
+
 Every error response from the API uses the envelope from
 `api-conventions.md`:
 `{ "error": { "code": "...", "message": "..." } }`. Clients branch on
