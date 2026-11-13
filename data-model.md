@@ -28,5 +28,6 @@ not implemented by the demo store.
 The demo also carries the worker's `digest_sends` ledger (`user_id`,
 `week`, `status`, `attempts`, `last_error`, `sent_at`). PII story:
 recipients are identified by user ID only — there is deliberately no
-email column — and `last_error` holds a truncated sender error string,
-never message content or an address.
+email column — and `last_error` holds only a sanitized error code (the
+failure's exception class name), never the exception message, message
+content, or an address.
