@@ -3,7 +3,7 @@ info:
   title: TaskFlow Demo API
   version: 1.1.0
   description: The demo implementation of the TaskFlow api-service (demo-app, v1.1.0). It implements a
-    subset of the production API described in endpoints.md — health and tasks — over a reduced task shape
+    subset of the production API described in endpoints.md — health, tasks, and comments — over reduced shapes
     in a local SQLite store. Conventions (error envelope, cursor pagination, health contract) follow api-conventions.md
     exactly; errors use the catalog in errors.md.
 paths:
@@ -144,6 +144,135 @@ paths:
               schema: *id001
       tags:
       - tasks
+  /v1/tasks/{task_id}/comments:
+    get:
+      summary: List comments
+      operationId: list_comments
+      parameters:
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Task Id
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 0
+          title: Cursor
+        description: The last comment id from a previous page's `next_cursor`; 0 starts from the beginning.
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 50
+          title: Limit
+        description: Page size (default 50). Out-of-range values are clamped, never an error.
+      responses:
+        '200':
+          description: A page of comments — the full append-only revision log, oldest first
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentList'
+        '404':
+          description: No task with that id (`task_not_found`)
+          content:
+            application/json:
+              schema: *id001
+        '503':
+          description: Task store unavailable (`store_unavailable`)
+          content:
+            application/json:
+              schema: *id001
+      tags:
+      - comments
+      description: Every revision is returned, including superseded ones; readers render each chain's head (the revision nothing supersedes).
+    post:
+      summary: Add a comment
+      operationId: create_comment
+      parameters:
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Task Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentIn'
+      responses:
+        '201':
+          description: The created comment (or revision)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '404':
+          description: No task with that id (`task_not_found`), or `supersedes_id` names no comment on this task (`comment_not_found`)
+          content:
+            application/json:
+              schema: *id001
+        '409':
+          description: The named revision is already superseded (`conflict`) — a revision must supersede the current head of its chain
+          content:
+            application/json:
+              schema: *id001
+        '422':
+          description: Validation error (`validation_error`); a blank body is rejected and never echoed
+          content:
+            application/json:
+              schema: *id001
+        '503':
+          description: Task store unavailable (`store_unavailable`)
+          content:
+            application/json:
+              schema: *id001
+      tags:
+      - comments
+      description: With `supersedes_id`, the new comment is a revision of that comment; the superseded row is never modified (append-only).
+  /v1/tasks/{task_id}/comments/{comment_id}:
+    get:
+      summary: Get a comment
+      operationId: get_comment
+      parameters:
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Task Id
+      - name: comment_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Comment Id
+      responses:
+        '200':
+          description: The comment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '404':
+          description: No task with that id (`task_not_found`), or no comment with that id on this task (`comment_not_found`)
+          content:
+            application/json:
+              schema: *id001
+        '503':
+          description: Task store unavailable (`store_unavailable`)
+          content:
+            application/json:
+              schema: *id001
+      tags:
+      - comments
 components:
   schemas:
     TaskIn:
@@ -183,6 +312,50 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Task'
+        next_cursor:
+          type: integer
+          nullable: true
+      required:
+      - items
+      - next_cursor
+    CommentIn:
+      properties:
+        body:
+          type: string
+          title: Body
+        supersedes_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Supersedes Id
+      type: object
+      required:
+      - body
+      title: CommentIn
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+        task_id:
+          type: integer
+        body:
+          type: string
+        supersedes_id:
+          type: integer
+          nullable: true
+      required:
+      - id
+      - task_id
+      - body
+      - supersedes_id
+    CommentList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
         next_cursor:
           type: integer
           nullable: true
@@ -237,3 +410,5 @@ tags:
   description: The health contract every TaskFlow service exposes.
 - name: tasks
   description: Task list, creation, and retrieval.
+- name: comments
+  description: Append-only comments; edits are revision rows linked by supersedes_id.

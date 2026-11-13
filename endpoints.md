@@ -23,14 +23,18 @@ repo.
 | GET | `/v1/tasks/{id}` | Fetch one task | ✓ |
 | PATCH | `/v1/tasks/{id}` | Update title, status, or assignee; `status` → `done` sets `completed_at` | |
 | DELETE | `/v1/tasks/{id}` | Soft-delete a task | |
-| GET | `/v1/tasks/{id}/comments` | List comments (cursor-paginated, oldest first) | |
-| POST | `/v1/tasks/{id}/comments` | Add a comment | |
+| GET | `/v1/tasks/{id}/comments` | List comments (cursor-paginated, oldest first) | ✓ |
+| POST | `/v1/tasks/{id}/comments` | Add a comment | ✓ |
+| GET | `/v1/tasks/{id}/comments/{comment_id}` | Fetch one comment | ✓ |
 
 Notes:
 
 - Comments are append-only: what looks like an edit in the UI posts a
   new revision row that supersedes the previous one (see
-  `data-model.md`). There is deliberately no `PATCH` on comments.
+  `data-model.md`). There is deliberately no `PATCH` on comments. The demo
+  implements all three comments operations, including the chain-head
+  rule: superseding an already-superseded revision returns
+  409 `conflict`.
 - The demo's task endpoints accept the `status` filter and cursor
   pagination exactly as specified in `api-conventions.md`; project
   scoping is production-only.
