@@ -1,5 +1,6 @@
 # taskflow-api-docs
 
+[![docs-ci](https://github.com/cynthiawang109-sudo/taskflow-api-docs/actions/workflows/docs-ci.yml/badge.svg)](https://github.com/cynthiawang109-sudo/taskflow-api-docs/actions/workflows/docs-ci.yml)
 API contracts for **TaskFlow** (fictional SaaS): the conventions every
 TaskFlow service follows, and the data model behind them. If code disagrees
 with this repo, that is a finding — raise it, don't silently pick a side.
