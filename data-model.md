@@ -55,8 +55,11 @@ The demo implementation (demo-app) stores a reduced `tasks` shape (`id`,
 the production store described above remains PostgreSQL. PII story for
 the demo tables: `tasks.title` and `comments.body` are user-generated
 free text, and they are the only user content stored — the demo is
-fictional-data-only, keeps the file on the
-developer's machine, and has no email or other PII columns. Comment
+fictional-data-only, and has no email or other PII columns.
+In local runs the file stays on the developer's machine; the public
+hosted demo keeps the same file on the host's ephemeral filesystem,
+where it is never backed up and resets whenever the service redeploys
+or restarts. Comment
 bodies are never echoed in error messages and never written to logs;
 because comments are append-only, a comment's full revision history
 is retained in the store, and the demo has no deletion path. The production
