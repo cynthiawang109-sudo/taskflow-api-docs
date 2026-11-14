@@ -41,6 +41,33 @@
   is never updated in place, which is what makes the append-only
   invariant auditable.
 
+## Worker tables
+
+The `worker` service owns the background job queue.
+
+| Table | Key columns | Invariants |
+|---|---|---|
+| `jobs` | `id` (primary key), `kind`, `payload`, `status`, `attempts`, `next_attempt_at`, `request_id`, `last_error`, `created_at`, `updated_at` | Payloads carry IDs only; retries use exponential backoff; dead-letter after exactly 5 failed attempts |
+
+### `jobs`
+
+- `kind` identifies the job type, e.g. `weekly_digest`.
+- `payload` is a JSON object carrying IDs only, never PII.
+- `status` is one of `queued`, `running`, `done`, `dead`.
+- `attempts` is an integer starting at 0; each failed attempt increments
+  it. `next_attempt_at` is the timestamp for the next attempt, scheduled
+  with exponential backoff. The fifth failed attempt sets `status` to
+  `dead` and dead-letters the job; there is no sixth attempt.
+- `request_id` is propagated from the enqueueing request for log
+  correlation.
+- `last_error` holds only the sanitized exception class name, never
+  a message, stack trace, or user data.
+- `created_at` and `updated_at` are creation and last-update timestamps.
+- PII story: `users.email` remains the system's only PII column and
+  never enters a payload. The worker reads email from `users` at send
+  time; job payloads carry IDs only and never PII, and `last_error`
+  carries a class name only, never user data.
+
 ## Notes for reviewers
 
 - Deletes are soft (`deleted_at`) on `projects` and `tasks`; hard deletes are
