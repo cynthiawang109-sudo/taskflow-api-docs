@@ -403,6 +403,8 @@ components:
       - status
       - checks
 servers:
+- url: https://taskflow-demo-app.onrender.com
+  description: Public demo deployment (Render free tier; sleeps when idle, first request may take up to a minute)
 - url: http://localhost:8000
   description: Local demo instance (uvicorn main:app)
 tags:
